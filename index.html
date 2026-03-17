@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lina Zeng — Climate Risk & Quant Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-void: #020a10;
+    --bg-deep: #040f1a;
+    --bg-panel: #071828;
+    --bg-card: #091e32;
+    --neon-blue: #00bfff;
+    --neon-cyan: #00ffd0;
+    --neon-border: rgba(0,191,255,0.22);
+    --neon-glow: 0 0 18px rgba(0,191,255,0.28), 0 0 50px rgba(0,191,255,0.09);
+    --text-primary: #e4f2ff;
+    --text-secondary: #6a9dbf;
+    --text-muted: #2e5570;
+    --accent-green: #00e5a0;
+    --accent-amber: #f59e0b;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg-void); color: var(--text-primary); font-family: var(--font-body); font-size: 16px; line-height: 1.7; overflow-x: hidden; }
+
+  #canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.4; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.1rem 4rem;
+    background: rgba(2,10,16,0.88); backdrop-filter: blur(22px);
+    border-bottom: 1px solid var(--neon-border);
+  }
+  .nav-logo { font-family: var(--font-mono); font-size: 0.82rem; color: var(--neon-cyan); letter-spacing: 0.08em; }
+  .nav-logo .slash { color: var(--text-muted); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a { font-family: var(--font-mono); font-size: 0.77rem; letter-spacing: 0.12em; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; transition: color 0.2s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--neon-blue); transition: width 0.3s; }
+  .nav-links a:hover { color: var(--neon-blue); }
+  .nav-links a:hover::after { width: 100%; }
+
+  section { position: relative; z-index: 1; }
+
+  /* HERO */
+  #hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 4rem 5rem; max-width: 1280px; margin: 0 auto; }
+
+  .incoming-badge { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.4rem 1rem; background: rgba(0,229,160,0.08); border: 1px solid rgba(0,229,160,0.35); font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-green); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.8rem; width: fit-content; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+
+  .hero-name { font-family: var(--font-display); font-size: clamp(3.5rem, 8vw, 6.5rem); font-weight: 800; line-height: 1.0; letter-spacing: -0.02em; background: linear-gradient(135deg, #e4f2ff 25%, #00bfff 65%, #00ffd0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.6rem; }
+  .hero-title { font-family: var(--font-display); font-size: clamp(1.1rem, 2.5vw, 1.7rem); font-weight: 400; color: var(--text-secondary); margin-bottom: 2rem; }
+  .hero-title em { font-style: normal; color: var(--neon-blue); }
+  .hero-bio { max-width: 560px; color: var(--text-secondary); font-size: 0.97rem; line-height: 1.85; margin-bottom: 2.5rem; }
+
+  /* PORTFOLIO TICKER */
+  .portfolio-label {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.15em; margin-bottom: 0.75rem;
+  }
+  .portfolio-ticker {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; margin-bottom: 2.5rem;
+    border: 1px solid var(--neon-border);
+    background: var(--neon-border);
+    overflow: hidden;
+  }
+  .ticker-card {
+    background: var(--bg-panel);
+    padding: 1rem 1.2rem 0.85rem;
+    transition: background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ticker-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: transparent; transition: background 0.3s;
+  }
+  .ticker-card.up::before { background: rgba(0,229,160,0.7); }
+  .ticker-card.down::before { background: rgba(255,80,80,0.6); }
+  .ticker-top {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 0.5rem;
+  }
+  .ticker-sym {
+    font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500;
+    color: var(--text-secondary); letter-spacing: 0.1em;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .live-badge {
+    font-size: 0.55rem; letter-spacing: 0.12em;
+    color: var(--accent-green); border: 1px solid rgba(0,229,160,0.4);
+    padding: 0.1rem 0.35rem; line-height: 1.4;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .ticker-spark { display: block; opacity: 0.8; }
+  .ticker-price {
+    font-family: var(--font-mono); font-size: 1.2rem; font-weight: 500;
+    color: var(--text-primary); letter-spacing: -0.01em;
+    transition: color 0.3s;
+  }
+  .ticker-chg {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    margin-top: 0.2rem; transition: color 0.3s;
+  }
+  .ticker-chg.up { color: var(--accent-green); }
+  .ticker-chg.down { color: #ff5050; }
+  .ticker-chg.flat { color: var(--text-muted); }
+
+  @keyframes flash-up { 0%,100%{background:var(--bg-panel)} 50%{background:rgba(0,229,160,0.06)} }
+  @keyframes flash-dn { 0%,100%{background:var(--bg-panel)} 50%{background:rgba(255,80,80,0.06)} }
+  .ticker-card.flash-up { animation: flash-up 0.6s ease; }
+  .ticker-card.flash-dn { animation: flash-dn 0.6s ease; }
+
+  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem; }
+
+  .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.8rem; background: transparent; border: 1px solid var(--neon-blue); color: var(--neon-blue); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+  .btn-primary::before { content: ''; position: absolute; inset: 0; background: var(--neon-blue); transform: translateX(-101%); transition: transform 0.3s; z-index: -1; }
+  .btn-primary:hover { color: var(--bg-void); box-shadow: var(--neon-glow); }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.8rem; background: transparent; border: 1px solid var(--text-muted); color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase; transition: all 0.2s; }
+  .btn-secondary:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+
+  /* TIMELINE inside hero */
+  .hero-timeline { border-top: 1px solid var(--neon-border); padding-top: 2.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
+  .ht-item { padding-right: 1.5rem; position: relative; }
+  .ht-item:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 8px; width: 1px; height: 60%; background: linear-gradient(180deg, var(--neon-border), transparent); }
+  .ht-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--neon-blue); background: var(--bg-void); margin-bottom: 0.7rem; }
+  .ht-dot.active { background: rgba(0,191,255,0.2); box-shadow: 0 0 10px rgba(0,191,255,0.4); }
+  .ht-period { font-family: var(--font-mono); font-size: 0.63rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+  .ht-role { font-size: 0.82rem; font-weight: 500; color: var(--text-primary); line-height: 1.35; margin-bottom: 0.15rem; }
+  .ht-company { font-family: var(--font-mono); font-size: 0.7rem; color: var(--neon-blue); }
+  .ht-company.green { color: var(--accent-green); }
+
+  /* SECTION LAYOUT */
+  .section-wrap { max-width: 1280px; margin: 0 auto; padding: 6rem 4rem; }
+  .section-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 4rem; }
+  .section-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--neon-blue); letter-spacing: 0.15em; }
+  .section-title { font-family: var(--font-display); font-size: clamp(1.7rem, 3.5vw, 2.5rem); font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+  .section-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--neon-border), transparent); }
+
+  /* SKILLS */
+  #skills { background: var(--bg-deep); }
+  .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .skill-card { background: var(--bg-panel); border: 1px solid var(--neon-border); padding: 1.6rem; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.2s; }
+  .skill-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-blue), transparent); opacity: 0; transition: opacity 0.3s; }
+  .skill-card:hover { border-color: rgba(0,191,255,0.45); transform: translateY(-3px); }
+  .skill-card:hover::before { opacity: 1; }
+  .skill-category { font-family: var(--font-mono); font-size: 0.68rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 0.7rem; }
+  .skill-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .tag { font-family: var(--font-mono); font-size: 0.67rem; padding: 0.22rem 0.6rem; background: rgba(0,191,255,0.05); border: 1px solid var(--neon-border); color: var(--text-secondary); }
+  .tag.hot { background: rgba(0,229,160,0.07); border-color: rgba(0,229,160,0.28); color: var(--accent-green); }
+  .tag.amber { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.28); color: var(--accent-amber); }
+
+  /* PROJECTS */
+  #projects { background: var(--bg-void); }
+  .projects-list { display: flex; flex-direction: column; gap: 1.3rem; }
+  .project-card { display: grid; grid-template-columns: 72px 1fr auto; align-items: start; gap: 2rem; padding: 2rem; background: var(--bg-card); border: 1px solid var(--neon-border); transition: border-color 0.3s, background 0.3s; }
+  .project-card:hover { border-color: rgba(0,191,255,0.45); background: var(--bg-panel); }
+  .project-num { font-family: var(--font-display); font-size: 2.8rem; font-weight: 800; color: rgba(0,191,255,0.1); line-height: 1; user-select: none; }
+  .project-tags { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 0.65rem; }
+  .ptag { font-family: var(--font-mono); font-size: 0.64rem; padding: 0.18rem 0.55rem; text-transform: uppercase; letter-spacing: 0.09em; }
+  .ptag-credit { background: rgba(0,191,255,0.1); color: var(--neon-blue); border: 1px solid rgba(0,191,255,0.25); }
+  .ptag-risk   { background: rgba(245,158,11,0.1); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.25); }
+  .ptag-ml     { background: rgba(124,58,237,0.12); color: #a78bfa; border: 1px solid rgba(124,58,237,0.28); }
+  .ptag-vol    { background: rgba(14,165,201,0.1); color: #0ea5c9; border: 1px solid rgba(14,165,201,0.28); }
+  .project-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
+  .project-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.75; }
+  .project-bullets { margin-top: 0.7rem; list-style: none; }
+  .project-bullets li { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); padding: 0.2rem 0 0.2rem 1rem; position: relative; }
+  .project-bullets li::before { content: '▸'; position: absolute; left: 0; color: var(--neon-blue); }
+  .project-metrics { display: flex; flex-direction: column; gap: 0.6rem; min-width: 110px; }
+  .metric { text-align: right; }
+  .metric-val { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 500; color: var(--neon-cyan); }
+  .metric-label { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* CONTACT */
+  #contact { background: var(--bg-deep); border-top: 1px solid var(--neon-border); }
+  .contact-inner { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 560px; margin: 0 auto; padding: 6rem 2rem; }
+  .contact-eyebrow { font-family: var(--font-mono); font-size: 0.72rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1.2rem; }
+  .contact-headline { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1.2rem; background: linear-gradient(135deg, #e4f2ff, #00bfff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .contact-sub { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.7; }
+  .contact-email { font-family: var(--font-mono); font-size: 0.95rem; color: var(--neon-blue); text-decoration: none; border-bottom: 1px solid var(--neon-border); padding-bottom: 2px; transition: all 0.2s; margin-bottom: 0.7rem; display: block; }
+  .contact-email:hover { border-color: var(--neon-blue); text-shadow: 0 0 10px rgba(0,191,255,0.4); }
+  .contact-phone { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2.5rem; }
+  .social-links { display: flex; gap: 1.5rem; }
+  .social-link { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.2s; }
+  .social-link:hover { color: var(--neon-blue); }
+
+  footer { text-align: center; padding: 1.5rem; border-top: 1px solid rgba(0,191,255,0.07); font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  body::after { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,191,255,0.01) 2px, rgba(0,191,255,0.01) 4px); pointer-events: none; z-index: 9999; }
+
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    #hero { padding: 7rem 1.5rem 3rem; }
+    .section-wrap { padding: 4rem 1.5rem; }
+    .skills-grid { grid-template-columns: 1fr 1fr; }
+    .project-card { grid-template-columns: 1fr; }
+    .project-metrics { flex-direction: row; }
+    .hero-timeline { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .ht-item::after { display: none; }
+    .portfolio-ticker { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .skills-grid { grid-template-columns: 1fr; }
+    .hero-timeline { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<nav>
+  <div class="nav-logo"><span class="slash">~/</span>lina_zeng</div>
+  <ul class="nav-links">
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <div class="incoming-badge">
+    <div class="badge-dot"></div>
+    Incoming Mar 2026 · Climate Risk Modeling Manager · Scotiabank
+  </div>
+  <h1 class="hero-name">Lina Zeng</h1>
+  <div class="hero-title">Quantitative Risk Researcher &amp; <em>Climate Risk Modeler</em></div>
+  <p class="hero-bio">MSc Statistics (Financial Modelling) candidate at Western University, specializing in credit risk, climate risk frameworks, and machine learning applications in finance. Bridging quantitative rigor with regulatory compliance — from IFRS 9 credit loss modeling to ESG risk assessment for institutional portfolios.</p>
+  <div class="portfolio-label">Personal Portfolio</div>
+  <div class="portfolio-ticker" id="portfolio-ticker">
+    <div class="ticker-card" id="card-GOOGL">
+      <div class="ticker-top">
+        <span class="ticker-sym">GOOGL</span>
+        <canvas class="ticker-spark" width="80" height="32"></canvas>
+      </div>
+      <div class="ticker-price" id="price-GOOGL">—</div>
+      <div class="ticker-chg" id="chg-GOOGL">—</div>
+    </div>
+    <div class="ticker-card" id="card-TSLA">
+      <div class="ticker-top">
+        <span class="ticker-sym">TSLA</span>
+        <canvas class="ticker-spark" width="80" height="32"></canvas>
+      </div>
+      <div class="ticker-price" id="price-TSLA">—</div>
+      <div class="ticker-chg" id="chg-TSLA">—</div>
+    </div>
+    <div class="ticker-card" id="card-MSFT">
+      <div class="ticker-top">
+        <span class="ticker-sym">MSFT</span>
+        <canvas class="ticker-spark" width="80" height="32"></canvas>
+      </div>
+      <div class="ticker-price" id="price-MSFT">—</div>
+      <div class="ticker-chg" id="chg-MSFT">—</div>
+    </div>
+    <div class="ticker-card" id="card-BTC">
+      <div class="ticker-top">
+        <span class="ticker-sym">BTC <span class="live-badge">LIVE</span></span>
+        <canvas class="ticker-spark" width="80" height="32"></canvas>
+      </div>
+      <div class="ticker-price" id="price-BTC">—</div>
+      <div class="ticker-chg" id="chg-BTC">—</div>
+    </div>
+  </div>
+  <div class="hero-cta">
+    <a href="#projects" class="btn-primary">View Projects →</a>
+    <a href="#contact" class="btn-secondary">Get In Touch</a>
+  </div>
+  <div class="hero-timeline">
+    <div class="ht-item">
+      <div class="ht-dot active"></div>
+      <div class="ht-period">Mar 2026 · Incoming</div>
+      <div class="ht-role">Climate Risk Modeling, Manager</div>
+      <div class="ht-company green">Scotiabank</div>
+    </div>
+    <div class="ht-item">
+      <div class="ht-dot"></div>
+      <div class="ht-period">May – Aug 2025</div>
+      <div class="ht-role">IT Risk Coordinator Intern</div>
+      <div class="ht-company">Aviva Canada</div>
+    </div>
+    <div class="ht-item">
+      <div class="ht-dot"></div>
+      <div class="ht-period">Sep 2024 – Oct 2025</div>
+      <div class="ht-role">MSc Statistics, Financial Modelling</div>
+      <div class="ht-company">Western University</div>
+    </div>
+    <div class="ht-item">
+      <div class="ht-dot"></div>
+      <div class="ht-period">Jun 2023 – Jan 2024</div>
+      <div class="ht-role">Research Analyst Intern</div>
+      <div class="ht-company">X-Institute</div>
+    </div>
+    <div class="ht-item">
+      <div class="ht-dot"></div>
+      <div class="ht-period">Jan – Jun 2023</div>
+      <div class="ht-role">ESG Intern</div>
+      <div class="ht-company">Cushman &amp; Wakefield</div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="section-wrap">
+    <div class="section-header reveal">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Skills</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card reveal">
+        <div class="skill-category">Credit &amp; Market Risk</div>
+        <div class="skill-name">Risk Modeling</div>
+        <div class="skill-tags">
+          <span class="tag hot">PD / LGD / EAD</span><span class="tag hot">IFRS 9 / ECL</span><span class="tag hot">Basel II / III</span><span class="tag">Stress Testing</span><span class="tag">Scenario Analysis</span><span class="tag">VaR</span><span class="tag amber">FRTB</span><span class="tag">AUC / KS</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-category">Climate &amp; ESG</div>
+        <div class="skill-name">Sustainable Finance</div>
+        <div class="skill-tags">
+          <span class="tag hot">Climate Risk</span><span class="tag hot">ESG Quantification</span><span class="tag">TCFD Framework</span><span class="tag">OSFI Compliance</span><span class="tag hot">MSCI ESG</span><span class="tag">Carbon Metrics</span><span class="tag">Transition Risk</span><span class="tag amber">Physical Risk</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-category">Quantitative Methods</div>
+        <div class="skill-name">Statistical &amp; ML</div>
+        <div class="skill-tags">
+          <span class="tag hot">Logistic Regression</span><span class="tag hot">Neural Networks (MLP)</span><span class="tag">Monte Carlo</span><span class="tag hot">Time Series</span><span class="tag">Black-Scholes</span><span class="tag">Regularization</span><span class="tag">Feature Engineering</span><span class="tag">Scorecard Modeling</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-category">Programming</div>
+        <div class="skill-name">Technical Tools</div>
+        <div class="skill-tags">
+          <span class="tag hot">Python</span><span class="tag hot">R</span><span class="tag hot">SQL</span><span class="tag">pandas / NumPy</span><span class="tag">scikit-learn</span><span class="tag">TensorFlow / Keras</span><span class="tag amber">Excel / VBA</span><span class="tag">Jira API</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-category">Data &amp; Reporting</div>
+        <div class="skill-name">Analytics &amp; BI</div>
+        <div class="skill-tags">
+          <span class="tag hot">Power BI</span><span class="tag hot">Dashboard Design</span><span class="tag">Automated Reporting</span><span class="tag">Data Validation</span><span class="tag amber">KPI Monitoring</span><span class="tag">Risk Indicators</span><span class="tag">Stakeholder Comms</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-category">Domain Knowledge</div>
+        <div class="skill-name">Finance &amp; Regulation</div>
+        <div class="skill-tags">
+          <span class="tag hot">Derivatives Pricing</span><span class="tag">Options Greeks</span><span class="tag hot">Financial Modeling</span><span class="tag">P&amp;L Attribution</span><span class="tag amber">OSFI Guidelines</span><span class="tag">Model Validation</span><span class="tag">Real Estate Finance</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="section-wrap">
+    <div class="section-header reveal">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Projects</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="projects-list">
+      <div class="project-card reveal">
+        <div class="project-num">01</div>
+        <div class="project-content">
+          <div class="project-tags"><span class="ptag ptag-credit">Credit Risk</span><span class="ptag ptag-risk">IFRS 9</span></div>
+          <div class="project-title">Credit Risk Modeling &amp; Expected Credit Loss Estimation</div>
+          <div class="project-desc">End-to-end credit risk pipeline estimating PD, LGD, and EAD in compliance with Basel II/III and IFRS 9. Processed 373,028 loan records with feature engineering and logistic regression scorecard modeling.</div>
+          <ul class="project-bullets">
+            <li>Stress testing and model validation using AUC and KS metrics</li>
+            <li>40% improvement in Python pipeline runtime via code optimization</li>
+            <li>Model validation report with regulatory risk-focused insights</li>
+          </ul>
+        </div>
+        <div class="project-metrics">
+          <div class="metric"><div class="metric-val">373K</div><div class="metric-label">Loan Records</div></div>
+          <div class="metric"><div class="metric-val">40%</div><div class="metric-label">Runtime ↓</div></div>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-num">02</div>
+        <div class="project-content">
+          <div class="project-tags"><span class="ptag ptag-vol">Volatility</span><span class="ptag ptag-ml">Neural Network</span></div>
+          <div class="project-title">Improving Implied Volatility Prediction through Neural Networks</div>
+          <div class="project-desc">Hybrid approach integrating Black-Scholes financial theory with an MLP neural network. Processed 12,528 options samples incorporating Delta, Vega, and Gamma as features to overcome B-S limitations.</div>
+          <ul class="project-bullets">
+            <li>47% reduction in IVRMSE vs Black-Scholes baseline</li>
+            <li>Dropout, regularization, and early stopping for robustness</li>
+            <li>Applications in trading book risk monitoring and P&amp;L attribution</li>
+          </ul>
+        </div>
+        <div class="project-metrics">
+          <div class="metric"><div class="metric-val">47%</div><div class="metric-label">Error ↓</div></div>
+          <div class="metric"><div class="metric-val">12.5K</div><div class="metric-label">Options Data</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="contact-inner">
+    <div class="contact-eyebrow">Get In Touch</div>
+    <h2 class="contact-headline">Let's Connect</h2>
+    <p class="contact-sub">Open to discussions on climate risk, quant finance, and research collaborations.</p>
+    <a href="/cdn-cgi/l/email-protection#f19d8b949f96c6c3b184869edf9290" class="contact-email"><span class="__cf_email__" data-cfemail="4f23352a2128787d0f3a3820612c2e">[email&#160;protected]</span></a>
+    <div class="contact-phone">+1 (437) 669-3520</div>
+    <div class="social-links">
+      <a href="https://www.linkedin.com/in/lina-z-101430326/" target="_blank" class="social-link">LinkedIn</a>
+      <a href="https://github.com/Astrid-Z20" target="_blank" class="social-link">GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer>&copy; 2025 Lina Zeng · Quantitative Risk · Climate Finance · Western University → Scotiabank</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ── PORTFOLIO TICKER ── */
+const SEEDS = {
+  GOOGL: { price: 175.20, chg: 0.84 },
+  TSLA:  { price: 248.50, chg: -1.23 },
+  MSFT:  { price: 415.80, chg: 0.52 },
+  BTC:   { price: 83400,  chg: 1.75 },
+};
+
+const histories = {};
+Object.keys(SEEDS).forEach(sym => {
+  const arr = [];
+  let p = SEEDS[sym].price * (1 - 0.015);
+  for (let i = 0; i < 30; i++) {
+    p += p * (Math.random() - 0.488) * 0.006;
+    arr.push(p);
+  }
+  arr.push(SEEDS[sym].price);
+  histories[sym] = arr;
+});
+
+function drawSpark(canvas, data, isUp) {
+  const W = canvas.width, H = canvas.height;
+  const c = canvas.getContext('2d');
+  c.clearRect(0, 0, W, H);
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const toX = i => (i / (data.length - 1)) * W;
+  const toY = v => H - 2 - ((v - min) / range) * (H - 4);
+  const grad = c.createLinearGradient(0, 0, 0, H);
+  const col = isUp ? '0,229,160' : '255,80,80';
+  grad.addColorStop(0, `rgba(${col},0.18)`);
+  grad.addColorStop(1, `rgba(${col},0)`);
+  c.beginPath();
+  data.forEach((v, i) => i === 0 ? c.moveTo(toX(i), toY(v)) : c.lineTo(toX(i), toY(v)));
+  c.lineTo(W, H); c.lineTo(0, H); c.closePath();
+  c.fillStyle = grad; c.fill();
+  c.beginPath();
+  data.forEach((v, i) => i === 0 ? c.moveTo(toX(i), toY(v)) : c.lineTo(toX(i), toY(v)));
+  c.strokeStyle = `rgba(${col},0.9)`; c.lineWidth = 1.5; c.stroke();
+}
+
+function formatPrice(sym, p) {
+  if (sym === 'BTC') return '$' + p.toLocaleString('en-US', {maximumFractionDigits: 0});
+  return '$' + p.toFixed(2);
+}
+
+function updateTicker() {
+  Object.keys(SEEDS).forEach(sym => {
+    const hist = histories[sym];
+    const last = hist[hist.length - 1];
+    const delta = last * (Math.random() - 0.497) * (sym === 'BTC' ? 0.003 : 0.0018);
+    const newP = last + delta;
+    hist.push(newP);
+    if (hist.length > 40) hist.shift();
+
+    const open = hist[0];
+    const pctChg = ((newP - open) / open) * 100;
+    const isUp = delta >= 0;
+
+    const priceEl = document.getElementById('price-' + sym);
+    const chgEl   = document.getElementById('chg-'   + sym);
+    const card    = document.getElementById('card-'  + sym);
+    const sparks  = card.querySelectorAll('.ticker-spark');
+
+    priceEl.textContent = formatPrice(sym, newP);
+    chgEl.textContent = (pctChg >= 0 ? '+' : '') + pctChg.toFixed(2) + '%';
+    chgEl.className = 'ticker-chg ' + (pctChg > 0.01 ? 'up' : pctChg < -0.01 ? 'down' : 'flat');
+    card.className = 'ticker-card ' + (isUp ? 'up' : 'down');
+    card.classList.add(isUp ? 'flash-up' : 'flash-dn');
+    setTimeout(() => card.classList.remove('flash-up', 'flash-dn'), 600);
+
+    if (sparks[0]) drawSpark(sparks[0], hist, pctChg >= 0);
+  });
+}
+
+async function fetchBTC() {
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+    const data = await res.json();
+    const realPrice = data.bitcoin.usd;
+    const realChg   = data.bitcoin.usd_24h_change;
+
+    // Re-seed BTC history around real price
+    const hist = histories['BTC'];
+    const last = hist[hist.length - 1];
+    const scale = realPrice / last;
+    histories['BTC'] = hist.map(p => p * scale);
+
+    // Patch chg display immediately
+    const chgEl = document.getElementById('chg-BTC');
+    chgEl.textContent = (realChg >= 0 ? '+' : '') + realChg.toFixed(2) + '%';
+    chgEl.className = 'ticker-chg ' + (realChg > 0.01 ? 'up' : realChg < -0.01 ? 'down' : 'flat');
+    document.getElementById('price-BTC').textContent = '$' + realPrice.toLocaleString('en-US', {maximumFractionDigits: 0});
+  } catch(e) {
+    console.warn('CoinGecko fetch failed, using simulated BTC', e);
+  }
+}
+
+fetchBTC();
+setInterval(fetchBTC, 60000);
+
+updateTicker();
+setInterval(updateTicker, 2200);
+
+/* ── PARTICLE CANVAS ── */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [], streams = [];
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random()*W; this.y = Math.random()*H;
+    this.vx = (Math.random()-0.5)*0.25; this.vy = (Math.random()-0.5)*0.25;
+    this.r = Math.random()*1.4+0.4; this.alpha = Math.random()*0.5+0.1;
+    this.color = Math.random()>0.65 ? '#00ffd0' : (Math.random()>0.5 ? '#00e5a0' : '#00bfff');
+  }
+  update() { this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset(); }
+  draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=this.color; ctx.globalAlpha=this.alpha; ctx.fill(); }
+}
+
+class Stream {
+  constructor() { this.reset(); }
+  reset() {
+    this.x=Math.random()*W; this.y=-20; this.speed=Math.random()*1+0.35;
+    this.chars='01∑∂∇σρμΔΨΩ%$€0123456789+-*/';
+    this.char=this.chars[Math.floor(Math.random()*this.chars.length)];
+    this.alpha=Math.random()*0.09+0.03; this.size=Math.floor(Math.random()*3)+9;
+    this.tick=0; this.interval=Math.floor(Math.random()*8)+5;
+  }
+  update() { this.y+=this.speed; this.tick++; if(this.tick%this.interval===0) this.char=this.chars[Math.floor(Math.random()*this.chars.length)]; if(this.y>H+20) this.reset(); }
+  draw() { ctx.font=`${this.size}px 'JetBrains Mono',monospace`; ctx.fillStyle='#00bfff'; ctx.globalAlpha=this.alpha; ctx.fillText(this.char,this.x,this.y); }
+}
+
+for(let i=0;i<70;i++) particles.push(new Particle());
+for(let i=0;i<55;i++) { const s=new Stream(); s.y=Math.random()*H; streams.push(s); }
+
+function drawLines() {
+  for(let i=0;i<particles.length;i++) for(let j=i+1;j<particles.length;j++) {
+    const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y, d=Math.sqrt(dx*dx+dy*dy);
+    if(d<110) { ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle='#00bfff'; ctx.globalAlpha=(1-d/110)*0.07; ctx.lineWidth=0.4; ctx.stroke(); }
+  }
+}
+
+function animate() { ctx.clearRect(0,0,W,H); streams.forEach(s=>{s.update();s.draw();}); drawLines(); particles.forEach(p=>{p.update();p.draw();}); ctx.globalAlpha=1; requestAnimationFrame(animate); }
+animate();
+
+/* ── SCROLL REVEAL ── */
+const els = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e,i) => { if(e.isIntersecting) setTimeout(()=>e.target.classList.add('visible'), i*60); });
+}, { threshold: 0.08 });
+els.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
