@@ -381,6 +381,23 @@
       <div class="project-card reveal">
         <div class="project-num">01</div>
         <div class="project-content">
+          <div class="project-tags"><span class="ptag ptag-ml">Random Forest</span><span class="ptag ptag-trading">Quantitative Trading</span></div>
+          <div class="project-title">Algorithmic Trend Prediction via Multi-Factor Random Forest</div>
+          <div class="project-desc">Developed an end-to-end pipeline to predict 5-day forward price direction. Engineered 20+ alpha features including momentum, mean-reversion (RSI/Stochastic), and volume-based indicators (OBV).</div>
+          <ul class="project-bullets">
+            <li>Implemented <strong>TimeSeriesSplit</strong> cross-validation to eliminate data leakage and ensure chronological integrity</li>
+            <li>Optimized Random Forest hyperparameters and utilized <strong>class_weight='balanced'</strong> to mitigate label imbalance</li>
+            <li>Built a live dashboard for real-time inference, outputting standardized directional probabilities $P(up/down)$</li>
+          </ul>
+        </div>
+        <div class="project-metrics">
+          <div class="metric"><div class="metric-val">20+</div><div class="metric-label">Indicators</div></div>
+          <div class="metric"><div class="metric-val">5yr</div><div class="metric-label">OHLCV Data</div></div>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-num">02</div>
+        <div class="project-content">
           <div class="project-tags"><span class="ptag ptag-credit">Credit Risk</span><span class="ptag ptag-risk">IFRS 9</span></div>
           <div class="project-title">Credit Risk Modeling &amp; Expected Credit Loss Estimation</div>
           <div class="project-desc">End-to-end credit risk pipeline estimating PD, LGD, and EAD in compliance with Basel II/III and IFRS 9. Processed 373,028 loan records with feature engineering and logistic regression scorecard modeling.</div>
@@ -396,7 +413,7 @@
         </div>
       </div>
       <div class="project-card reveal">
-        <div class="project-num">02</div>
+        <div class="project-num">03</div>
         <div class="project-content">
           <div class="project-tags"><span class="ptag ptag-vol">Volatility</span><span class="ptag ptag-ml">Neural Network</span></div>
           <div class="project-title">Improving Implied Volatility Prediction through Neural Networks</div>
