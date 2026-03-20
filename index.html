@@ -550,6 +550,44 @@ async function fetchBTC() {
 fetchBTC();
 setInterval(fetchBTC, 60000);
 
+
+const FINNHUB_API_KEY = 'd6ulekhr01qig5450j10d6ulekhr01qig5450j1g';
+const STOCK_SYMBOLS = ['GOOGL', 'TSLA', 'MSFT'];
+
+async function fetchStocks() {
+  for (const sym of STOCK_SYMBOLS) {
+    try {
+      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_API_KEY}`);
+      const data = await res.json();
+      
+      
+      if (data && data.c) {
+        const realPrice = data.c;
+        const realChg = data.dp;
+
+        
+        const hist = histories[sym];
+        const last = hist[hist.length - 1];
+        const scale = realPrice / last;
+        histories[sym] = hist.map(p => p * scale);
+
+        
+        const chgEl = document.getElementById('chg-' + sym);
+        chgEl.textContent = (realChg >= 0 ? '+' : '') + realChg.toFixed(2) + '%';
+        chgEl.className = 'ticker-chg ' + (realChg > 0.01 ? 'up' : realChg < -0.01 ? 'down' : 'flat');
+        document.getElementById('price-' + sym).textContent = '$' + realPrice.toFixed(2);
+      }
+    } catch(e) {
+      console.warn(`Finnhub fetch failed for ${sym}, using simulated data`, e);
+    }
+  }
+}
+
+
+fetchStocks();
+
+setInterval(fetchStocks, 60000);
+  
 updateTicker();
 setInterval(updateTicker, 2200);
 
